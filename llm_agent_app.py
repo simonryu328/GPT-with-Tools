@@ -4,15 +4,16 @@ import streamlit as st
 import langchain
 
 from langchain_openai import OpenAI
-from langchain.agents import load_tools, initialize_agent, AgentType
+from langchain.agents import load_tools, initialize_agent, AgentType, Tool
 from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
-from langchain.tools import DuckDuckGoSearchRun
+from langchain.utilities import DuckDuckGoSearchAPIWrapper
+from langchain.chains import LLMMathChain
 
 load_dotenv()
 
-st.set_page_config(page_title="LangChain Agents + MRKL")
-st.title("LangChain Agents + MRKL")
+st.set_page_config(page_title="LangChain Agents")
+st.title("🤖 Chatbot with Agents")
 
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 
@@ -24,15 +25,30 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
+# LLM Setup
 llm = OpenAI(temperature=0, streaming=True, openai_api_key = os.getenv("OPENAI_API_KEY"))
-tools = load_tools(
-    ["ddg-search"]
-)
-agent = initialize_agent(
-    tools=tools,
-    llm=llm,
-    agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
-)
+
+search = DuckDuckGoSearchAPIWrapper()
+llm_math_chain = LLMMathChain.from_llm(llm)
+
+tools = [
+    Tool(
+        name="Search",
+        func=search.run,
+        description="useful for when you need to answer questions about current events. You should ask targeted questions",
+    ),
+    Tool(
+        name="Calculator",
+        func=llm_math_chain.run,
+        description="useful for when you need to answer questions about math",
+    )
+]
+
+# agent = initialize_agent(
+#     tools=tools,
+#     llm=llm,
+#     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
+# )
 
 if prompt := st.chat_input(placeholder="Who are the top 3 individual shareholders of Nvidia?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -49,7 +65,7 @@ if prompt := st.chat_input(placeholder="Who are the top 3 individual shareholder
     )
 
     search_agent = initialize_agent(
-        tools = [DuckDuckGoSearchRun(name="Search")],
+        tools=tools,
         llm=llm,
         agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
         handle_parsing_errors=True,
