@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import streamlit as st
 import langchain
 
@@ -11,9 +11,9 @@ from langchain.utilities import DuckDuckGoSearchAPIWrapper
 from langchain.chains import LLMMathChain
 from langchain_community.tools import DuckDuckGoSearchRun
 
-load_dotenv()
+# load_dotenv()
 
-st.set_page_config(page_title="LangChain Agents")
+st.set_page_config(page_title="Chatbot with Tools")
 st.title("🤖 Chatbot with Tools ⚒️")
 
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
