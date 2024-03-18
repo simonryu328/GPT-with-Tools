@@ -26,32 +26,6 @@ if "messages" not in st.session_state:
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
-# LLM Setup
-llm = OpenAI(temperature=0, streaming=True, openai_api_key = os.getenv("OPENAI_API_KEY"))
-
-# search = DuckDuckGoSearchAPIWrapper()
-search = DuckDuckGoSearchRun()
-llm_math_chain = LLMMathChain.from_llm(llm)
-
-tools = [
-    Tool(
-        name="Search",
-        func=search.run,
-        description="useful for when you need to answer questions about current events. You should ask targeted questions",
-    ),
-    Tool(
-        name="Calculator",
-        func=llm_math_chain.run,
-        description="useful for when you need to answer questions about math",
-    )
-]
-
-# agent = initialize_agent(
-#     tools=tools,
-#     llm=llm,
-#     agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION
-# )
-
 if prompt := st.chat_input(placeholder="Who are the top 3 individual shareholders of Nvidia?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
@@ -65,6 +39,20 @@ if prompt := st.chat_input(placeholder="Who are the top 3 individual shareholder
         openai_api_key=openai_api_key,
         streaming=True
     )
+    search = DuckDuckGoSearchRun()
+    llm_math_chain = LLMMathChain.from_llm(llm)
+    tools = [
+        Tool(
+            name="Search",
+            func=search.run,
+            description="useful for when you need to answer questions about current events. You should ask targeted questions",
+        ),
+        Tool(
+            name="Calculator",
+            func=llm_math_chain.run,
+            description="useful for when you need to answer questions about math",
+        )
+    ]
 
     search_agent = initialize_agent(
         tools=tools,
