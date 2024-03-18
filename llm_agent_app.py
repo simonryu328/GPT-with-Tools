@@ -9,11 +9,12 @@ from langchain.callbacks import StreamlitCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.utilities import DuckDuckGoSearchAPIWrapper
 from langchain.chains import LLMMathChain
+from langchain_community.tools import DuckDuckGoSearchRun
 
 load_dotenv()
 
 st.set_page_config(page_title="LangChain Agents")
-st.title("🤖 Chatbot with Agents")
+st.title("🤖 Chatbot with Tools ⚒️")
 
 openai_api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 
@@ -28,7 +29,8 @@ for msg in st.session_state.messages:
 # LLM Setup
 llm = OpenAI(temperature=0, streaming=True, openai_api_key = os.getenv("OPENAI_API_KEY"))
 
-search = DuckDuckGoSearchAPIWrapper()
+# search = DuckDuckGoSearchAPIWrapper()
+search = DuckDuckGoSearchRun()
 llm_math_chain = LLMMathChain.from_llm(llm)
 
 tools = [
